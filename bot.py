@@ -109,6 +109,7 @@ async def check_permissions(application: Application) -> None:
     """
     logger.info("Starting permission check...")
     bot = application.bot
+    context = application.job_queue.context # Get the correct context for the job
     
     # 1. Check Source Channel (Read permission)
     source_ok = False
@@ -120,11 +121,11 @@ async def check_permissions(application: Application) -> None:
             logger.info(f"✅ Bot is a member of the source channel {CHANNEL_SOURCE_ID}.")
         else:
             logger.error(f"❌ Bot is not a member of the source channel {CHANNEL_SOURCE_ID}. Status: {member.status}")
-            await send_owner_message(application.job_queue.context, f"❌ **Permission Error:** Bot is not a member of the source channel `{CHANNEL_SOURCE_ID}`. Please add the bot to the channel.")
+            await send_owner_message(context, f"❌ **Permission Error:** Bot is not a member of the source channel `{CHANNEL_SOURCE_ID}`. Please add the bot to the channel.")
             
     except Exception as e:
         logger.error(f"❌ Failed to check source channel {CHANNEL_SOURCE_ID} permissions. Error: {e}")
-        await send_owner_message(application.job_queue.context, f"❌ **Permission Error:** Failed to check source channel `{CHANNEL_SOURCE_ID}`. Ensure the bot is added to the channel and the ID is correct. Error: `{e}`")
+        await send_owner_message(context, f"❌ **Permission Error:** Failed to check source channel `{CHANNEL_SOURCE_ID}`. Ensure the bot is added to the channel and the ID is correct. Error: `{e}`")
 
     # 2. Check Target Channel (Post permission)
     target_ok = False
@@ -136,19 +137,19 @@ async def check_permissions(application: Application) -> None:
             logger.info(f"✅ Bot has posting rights in the target channel {CHANNEL_TARGET_ID}.")
         elif member.status == 'administrator' and not member.can_post_messages:
             logger.error(f"❌ Bot is an admin in target channel {CHANNEL_TARGET_ID} but is missing 'Post messages' permission.")
-            await send_owner_message(application.job_queue.context, f"❌ **Permission Error:** Bot is an admin in target channel `{CHANNEL_TARGET_ID}` but is missing the 'Post messages' permission.")
+            await send_owner_message(context, f"❌ **Permission Error:** Bot is an admin in target channel `{CHANNEL_TARGET_ID}` but is missing the 'Post messages' permission.")
         else:
             logger.error(f"❌ Bot is not an administrator in the target channel {CHANNEL_TARGET_ID}. Status: {member.status}")
-            await send_owner_message(application.job_queue.context, f"❌ **Permission Error:** Bot is not an administrator in the target channel `{CHANNEL_TARGET_ID}`. Please make the bot an administrator and grant it 'Post messages' permission.")
+            await send_owner_message(context, f"❌ **Permission Error:** Bot is not an administrator in the target channel `{CHANNEL_TARGET_ID}`. Please make the bot an administrator and grant it 'Post messages' permission.")
 
     except Exception as e:
         logger.error(f"❌ Failed to check target channel {CHANNEL_TARGET_ID} permissions. Error: {e}")
-        await send_owner_message(application.job_queue.context, f"❌ **Permission Error:** Failed to check target channel `{CHANNEL_TARGET_ID}`. Ensure the bot is an administrator with 'Post messages' permission. Error: `{e}`")
+        await send_owner_message(context, f"❌ **Permission Error:** Failed to check target channel `{CHANNEL_TARGET_ID}`. Ensure the bot is an administrator with 'Post messages' permission. Error: `{e}`")
 
     if source_ok and target_ok:
-        await send_owner_message(application.job_queue.context, "✅ **All permissions verified!** The bot is ready to start forwarding messages.")
+        await send_owner_message(context, "✅ **All permissions verified!** The bot is ready to start forwarding messages.")
     else:
-        await send_owner_message(application.job_queue.context, "⚠️ **Startup Warning:** One or more critical permissions are missing. Forwarding may fail until permissions is corrected.")
+        await send_owner_message(context, "⚠️ **Startup Warning:** One or more critical permissions are missing. Forwarding may fail until permissions is corrected.")
 
 # --- Error Handler ---
 
