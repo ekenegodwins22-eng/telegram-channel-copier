@@ -239,6 +239,7 @@ def main() -> None:
     application = Application.builder().token(BOT_TOKEN).build()
 
     # Register handlers
+    from telegram.ext import CommandHandler # FIX: CommandHandler was not imported globally
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("start_forward", start_forward_command))
     application.add_handler(CommandHandler("stop_forward", stop_forward_command))
