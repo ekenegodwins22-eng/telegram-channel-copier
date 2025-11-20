@@ -39,6 +39,25 @@ async def send_owner_message(context: ContextTypes.DEFAULT_TYPE, text: str) -> N
 
 # --- Command Handlers ---
 
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Greets the user and provides basic instructions."""
+    if update.effective_chat.type != 'private':
+        return
+        
+    welcome_message = (
+        "👋 Welcome to the Channel Copier Bot!\n\n"
+        "I am running and ready to sync your channels.\n"
+        "If you are the owner, you can use the following commands:\n"
+        "• /status - Check the bot's configuration and forwarding status.\n"
+        "• /start_forward - Activate the message copying.\n"
+        "• /stop_forward - Pause the message copying.\n\n"
+        "If you haven't received the initial permission check message, please ensure:\n"
+        "1. Your Telegram User ID is correctly set as the OWNER_ID.\n"
+        "2. The bot has been added to both channels with the correct permissions."
+    )
+    await update.message.reply_text(welcome_message)
+    logger.info(f"User {update.effective_user.id} started the bot.")
+
 async def start_forward_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Starts the message forwarding process."""
     global forwarding_active
@@ -220,7 +239,7 @@ def main() -> None:
     application = Application.builder().token(BOT_TOKEN).build()
 
     # Register handlers
-    from telegram.ext import CommandHandler
+    application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("start_forward", start_forward_command))
     application.add_handler(CommandHandler("stop_forward", stop_forward_command))
     application.add_handler(CommandHandler("status", status_command))
